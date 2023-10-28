@@ -1,14 +1,18 @@
 # faas-grafana
 
-OpenFaaS Grafana [Docker image](https://hub.docker.com/r/stefanprodan/faas-grafana/)
+First build your image 
+
+```
+docker build -t faas-grafana:v1 grafana/.
+```
 
 ### Kubernetes
 
-Run Grafan in OpenFaaS Kubernetes namespace:
+Run Grafana in OpenFaaS Kubernetes namespace. Make sure you have set you minio docker env:
 
 ```bash
 kubectl -n openfaas run \
---image=stefanprodan/faas-grafana:4.6.3 \
+--image=faas-grafana:v1 \
 --port=3000 \
 grafana
 ```
@@ -21,25 +25,11 @@ kubectl -n openfaas expose deployment grafana \
 --name=grafana
 ```
 
-Find Grafana node port address:
-
-```bash
-$GRAFANA_PORT=$(kubectl -n openfaas get svc grafana -o jsonpath="{.spec.ports[0].nodePort}")
+Forward localhost to Grafana:
 ```
+kubectl port-forward pod/grafana 3000:3000 -n openfaas
+```
+kubectl port-forward pod/grafana 3000:3000 -n openfaas
 
-URL: `http://<KUBE_IP>:<GRAFANA_PORT>/dashboard/db/openfaas`
+URL: `http://localhost:3000/dashboard/db/openfaas`
 Credentials: `admin/admin`
-
-### Swarm
-
-Run Grafana in OpenFaaS Swarm network:
-
-```bash
-docker service create -d \
---name=func_grafana \
---publish=3000:3000 \
---network=func_functions \
-stefanprodan/faas-grafana:4.6.3
-```
-
-URL: `http://<SWARM_IP>:3000/dashboard/db/openfaas`
